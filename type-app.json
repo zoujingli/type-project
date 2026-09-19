@@ -1,0 +1,24 @@
+{
+  "name": "type-project",
+  "version": "1.0.0-dev",
+  "entry": "app/main.php",
+  "development": {"entry": "dev.php", "prepare": "prepare.php", "output": "build/development", "check": ["check"], "test": ["tests/smoke.php"]},
+  "sources": ["app"],
+  "runtime": {
+    "Linux": {"extensions": ["pcntl"], "functions": ["pcntl_signal", "pcntl_async_signals", "pcntl_signal_get_handler"]},
+    "Darwin": {"extensions": ["pcntl"], "functions": ["pcntl_signal", "pcntl_async_signals", "pcntl_signal_get_handler"]}
+  },
+  "routing": "config/route.php",
+  "config": {
+    "class": "app\\generated\\ProjectConfig",
+    "files": ["config/app.php", "config/database.php"]
+  },
+  "operations": {
+    "classes": {
+      "app\\generated\\UserOperations": "app\\system\\service\\UserService"
+    }
+  },
+  "capabilities": {"schema": {"users": [1]}, "messages": {}, "cache": {}},
+  "output": "build/type-project",
+  "build-directory": "build/compiler"
+}

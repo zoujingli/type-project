@@ -1,0 +1,51 @@
+{
+  "name": "zoujingli/type-project",
+  "description": "TypeApp 独立应用模板：按需组合 Plugins，提供开发入口、数据库驱动选择与 TypePHP 构建配置。",
+  "type": "project",
+  "license": "Apache-2.0",
+  "require": {
+    "php": ">=8.4 <8.6",
+    "zoujingli/type-core": "~1.0.0@dev",
+    "zoujingli/type-orm-sqlite": "~1.0.0@dev",
+    "zoujingli/type-validate": "~1.0.0@dev",
+    "zoujingli/type-log": "~1.0.0@dev"
+  },
+  "require-dev": {
+    "zoujingli/type-build": "~1.0.0@dev",
+    "zoujingli/type-testing": "~1.0.0@dev",
+    "swoole/typephp": "0.9.0",
+    "swoole/phpx": "2.9.0"
+  },
+  "autoload": {"psr-4": {"app\\": "app/"}},
+  "repositories": [
+    {"type": "git", "url": "https://github.com/zoujingli/type-runtime.git"},
+    {"type": "git", "url": "https://github.com/zoujingli/type-core.git"},
+    {"type": "git", "url": "https://github.com/zoujingli/type-orm.git"},
+    {"type": "git", "url": "https://github.com/zoujingli/type-orm-sqlite.git"},
+    {"type": "git", "url": "https://github.com/zoujingli/type-validate.git"},
+    {"type": "git", "url": "https://github.com/zoujingli/type-log.git"},
+    {"type": "git", "url": "https://github.com/zoujingli/type-build.git"},
+    {"type": "git", "url": "https://github.com/zoujingli/type-testing.git"}
+  ],
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "config": {"allow-plugins": false, "sort-packages": true},
+  "scripts": {
+    "prepare": "@php prepare.php",
+    "dev": "@php dev.php",
+    "doctor": "@php vendor/bin/type doctor type-app.json",
+    "watch": ["Composer\\Config::disableProcessTimeout", "@php vendor/bin/type watch type-app.json"],
+    "serve": ["Composer\\Config::disableProcessTimeout", "@php dev.php serve"],
+    "build": "@php vendor/bin/type type-app.json",
+    "package": "@php vendor/bin/type package build/type-project build/release .env.example",
+    "test": "@php tests/smoke.php"
+  },
+  "extra": {
+    "type-template": {
+      "protocol": 1,
+      "paths": ["app", "config", "scaffold", "tests/smoke.php", ".env.example", ".gitignore", "README.md", "LICENSE", "NOTICE", "composer.json", "type-app.json", "toolchain.lock.json", "configure.php", "prepare.php", "dev.php"],
+      "driver-target": "app/common/database/DatabaseFactory.php",
+      "drivers": {"sqlite": "scaffold/sqlite.php", "mysql": "scaffold/mysql.php", "pgsql": "scaffold/pgsql.php"}
+    }
+  }
+}

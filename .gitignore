@@ -1,0 +1,9 @@
+/vendor/
+/build/
+/var/*.sqlite*
+/var/*.type-migration.lock
+/var/*.type-migration.lock.owner
+/.env
+/.env.*
+!/.env.example
+/auth.json

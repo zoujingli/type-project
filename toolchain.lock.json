@@ -1,0 +1,8 @@
+{
+  "php": "8.5.10",
+  "zts": true,
+  "typephp": {"version": "0.9.0", "reference": "f127dadf5dc6e554ff5182fd35a6c499fea47242"},
+  "phpx": {"version": "2.9.0", "reference": "6f2089379cbc7ae22dacf0faa65dd05e40d72c20"},
+  "platform": "linux",
+  "primary-architecture": "x86_64"
+}
