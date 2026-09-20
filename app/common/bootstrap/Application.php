@@ -30,6 +30,7 @@ use Type\Core\Http\RequestPolicy;
 use Type\Core\Http\Router;
 use Type\Core\Http\SwooleServer;
 use Type\Orm\DatabaseManager;
+use Type\Orm\Db;
 use Type\Orm\Migration\MigrationConsole;
 use Type\Orm\Migration\Migrator;
 use Type\Runtime\CoroutineRuntime;
@@ -163,12 +164,13 @@ final class Application
             Settings::integer($settings, 'database.pool.waiters', 0, 65536),
             Settings::integer($settings, 'database.pool.wait_ms', 0, 60000) / 1000.0
         );
+        Db::configure($database);
         $messages = new Factory();
         $router = new Router($messages, $messages);
         $users = new UserOperations(new UserService());
         Routes::register($router, [
             HomeController::class => static fn (): HomeController => new HomeController($messages),
-            UserController::class => static fn (): UserController => new UserController($database, $users, $messages),
+            UserController::class => static fn (): UserController => new UserController($users, $messages),
         ]);
 
         return new Pipeline([

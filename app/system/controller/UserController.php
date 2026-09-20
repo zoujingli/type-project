@@ -12,8 +12,6 @@ use Type\Core\Http\Attribute\Route;
 use Type\Core\Http\HttpError;
 use Type\Core\Http\Message\Factory;
 use Type\Core\Http\RequestBody;
-use Type\Orm\DatabaseManager;
-use Type\Runtime\ExecutionScope;
 use Type\Validate\Field;
 use Type\Validate\Input;
 use Type\Validate\ValidationException;
@@ -26,14 +24,12 @@ use Type\Validate\ValidationException;
 #[Group(namePrefix: 'users.')]
 final class UserController
 {
-    private DatabaseManager $database;
     private UserOperations $users;
     private Factory $messages;
 
-    /** 注入进程内数据库管理器与生成的事务调用入口，不在构造时借用连接。 */
-    public function __construct(DatabaseManager $database, UserOperations $users, Factory $messages)
+    /** 注入生成的事务调用入口和响应工厂；连接由框架在执行时借用。 */
+    public function __construct(UserOperations $users, Factory $messages)
     {
-        $this->database = $database;
         $this->users = $users;
         $this->messages = $messages;
     }
@@ -60,10 +56,8 @@ final class UserController
         ], (new Input([]))->withQuery($request->getUri()->getQuery()));
         $filters = $parameters;
         unset($filters['page']);
-        $connection = $this->database->connect($this->scope($request));
 
         return $this->response(200, $this->users->page(
-            $connection,
             array_key_exists('page', $parameters) ? $parameters['page'] : 1,
             $filters
         ));
@@ -80,9 +74,8 @@ final class UserController
     {
         $values = $this->payload($request, false);
         unset($values['version']);
-        $connection = $this->database->connect($this->scope($request));
 
-        return $this->response(201, ['data' => $this->users->create($connection, $values)]);
+        return $this->response(201, ['data' => $this->users->create($values)]);
     }
 
     /** @throws ValidationException 路由 id 超出本应用支持的整数范围。 */
@@ -90,9 +83,8 @@ final class UserController
     public function show(ServerRequestInterface $request): ResponseInterface
     {
         $id = $this->id($request);
-        $connection = $this->database->connect($this->scope($request));
 
-        return $this->response(200, ['data' => $this->users->find($connection, $id)]);
+        return $this->response(200, ['data' => $this->users->find($id)]);
     }
 
     /**
@@ -108,10 +100,8 @@ final class UserController
         $data = $this->payload($request, true);
         $values = $data;
         unset($values['version']);
-        $connection = $this->database->connect($this->scope($request));
 
         return $this->response(200, ['data' => $this->users->update(
-            $connection,
             $id,
             $values,
             array_key_exists('version', $data) ? $data['version'] : null
@@ -127,9 +117,8 @@ final class UserController
     public function destroy(ServerRequestInterface $request): ResponseInterface
     {
         $id = $this->id($request);
-        $connection = $this->database->connect($this->scope($request));
 
-        return $this->response(200, ['deleted' => $this->users->delete($connection, $id)]);
+        return $this->response(200, ['deleted' => $this->users->delete($id)]);
     }
 
     /** 使用路由的独立输入来源，不能被 query 或 body 中的同名 id 覆盖。 */
@@ -159,17 +148,6 @@ final class UserController
             'email' => Field::text()->nullable()->email()->length(1, 255),
             'version' => Field::integer()->range(1, PHP_INT_MAX),
         ], Input::json(RequestBody::read($request->getBody(), 16384), 16384, 8), 'default', $patch);
-    }
-
-    /** 只有受管 HTTP 请求可取得连接，离开作用域的手工请求不能借用资源。 */
-    private function scope(ServerRequestInterface $request): ExecutionScope
-    {
-        $scope = $request->getAttribute('type.scope');
-        if (!$scope instanceof ExecutionScope) {
-            throw new \RuntimeException('用户控制器需要受管请求作用域');
-        }
-
-        return $scope;
     }
 
     /** @param array<string, mixed> $body 已明确选择对外字段的业务结果。 */

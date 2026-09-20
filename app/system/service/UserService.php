@@ -6,12 +6,11 @@ namespace app\system\service;
 
 use app\system\model\User;
 use Type\Orm\Attribute\Transactional;
-use Type\Orm\Connection;
 use Type\Orm\ModelException;
 use Type\Orm\ModelQuery;
 
 /**
- * 用户业务只接收已校验的数据与显式连接，不依赖 HTTP 请求或全局容器。
+ * 用户业务只接收已校验的数据，连接由当前执行作用域自动管理。
  *
  * 写方法的事务由构建期生成的 UserOperations 执行；直接调用本类不会魔法开启事务。
  */
@@ -24,9 +23,9 @@ final class UserService
      * @return array{data: list<array{id: int, name: string, age: int, email: ?string, version: int}>, total: int, page: int}
      * @throws ModelException 行数据或模型水合类型不符合声明。
      */
-    public function page(Connection $connection, int $number, array $filters = []): array
+    public function page(int $number, array $filters = []): array
     {
-        $filtered = \_query(User::query($connection), $filters)->like('name')->equal('age')
+        $filtered = User::search($filters)->like('name')->equal('age')
             ->order(['id' => 'id', 'name' => 'name', 'age' => 'age'], ['id' => 'ASC'])->query();
         if (!$filtered instanceof ModelQuery) {
             throw new ModelException('invalid_user_query', '用户筛选必须保留模型查询');
@@ -49,9 +48,9 @@ final class UserService
      * @return array{id: int, name: string, age: int, email: ?string, version: int}
      * @throws ModelException 用户不存在或查询映射失败。
      */
-    public function find(Connection $connection, int $id): array
+    public function find(int $id): array
     {
-        return $this->load($connection, $id)->present();
+        return $this->load($id)->present();
     }
 
     /**
@@ -61,13 +60,13 @@ final class UserService
      * @return array{id: int, name: string, age: int, email: ?string, version: int}
      * @throws ModelException 字段不符合模型规则或写后记录不可见。
      */
-    #[Transactional(connection: 'connection')]
-    public function create(Connection $connection, array $values): array
+    #[Transactional]
+    public function create(array $values): array
     {
         $user = new User($values);
-        $user->save($connection);
+        $user->save();
 
-        return $this->find($connection, $user->id);
+        return $this->find($user->id);
     }
 
     /**
@@ -77,17 +76,17 @@ final class UserService
      * @return array{id: int, name: string, age: int, email: ?string, version: int}
      * @throws ModelException 用户不存在、版本已过期或并发写入冲突。
      */
-    #[Transactional(connection: 'connection')]
-    public function update(Connection $connection, int $id, array $values, ?int $version = null): array
+    #[Transactional]
+    public function update(int $id, array $values, ?int $version = null): array
     {
-        $user = $this->load($connection, $id);
+        $user = $this->load($id);
         if ($version !== null && $version !== $user->getVersion()) {
             throw new ModelException('stale_version', '用户版本已过期，请重新读取后更新');
         }
         $user->fill($values);
-        $user->save($connection);
+        $user->save();
 
-        return $this->find($connection, $user->id);
+        return $this->find($user->id);
     }
 
     /**
@@ -95,16 +94,16 @@ final class UserService
      *
      * @throws ModelException 用户不存在或并发乐观锁冲突。
      */
-    #[Transactional(connection: 'connection')]
-    public function delete(Connection $connection, int $id): bool
+    #[Transactional]
+    public function delete(int $id): bool
     {
-        return $this->load($connection, $id)->delete($connection);
+        return $this->load($id)->delete();
     }
 
     /** 查询工厂必须返回业务 User，避免生成基类绕过业务投影约定。 */
-    private function load(Connection $connection, int $id): User
+    private function load(int $id): User
     {
-        $user = User::query($connection)->find($id);
+        $user = User::query()->find($id);
         if ($user === null) {
             throw new ModelException('user_not_found', '用户不存在');
         }
