@@ -2,6 +2,8 @@
 
 这是独立业务项目的起点，包名为 `zoujingli/type-project`。TypeApp 是以 TypePHP 全量编译、Swoole 驱动运行、Plugins 组合能力的 PHP 应用框架。Plugins 由 Composer 安装；生产组件与业务一起编译，Swoole 原生扩展作为运行依赖提供能力。主仓中的物联中心是成品案例，不随本模板分发。用本模板创建自己的应用，再按需安装 `type-xxxx` 组件，即可开发其他业务系统。框架组件在公开开发主仓维护，消费应用从对应公开分发子仓安装；模板不包含主仓 path repository、分发凭据、缓存/Redis 依赖或全部组件源码。
 
+**框架已验证平台：Linux x64 / ARM64、macOS ARM64、Windows x64。** 具体命令、ORM 和应用场景见[平台支持表](https://iots.top/#/guide/platforms?id=当前平台状态)。本模板的经典 HTTP 入口仍要求 Unix worker 与信号能力，不能将组件验收扩大为模板全部功能在 Windows 上通过。
+
 ## 创建与驱动选择
 
 如果已经安装本阶段的 type-build，并已将公开模板克隆到本地，可直接使用统一入口创建不存在的新目录：
@@ -98,7 +100,7 @@ composer serve
 
 也可继续使用 `php dev.php serve`。默认监听127.0.0.1:9501，Host 白名单采用当前端口的 localhost 和127.0.0.1；对外部署显式设置 APP_LISTEN、APP_PORT、APP_ALLOWED_HOSTS，只将真实可信代理加入 APP_TRUSTED_PROXIES。模板不会创建生产令牌。
 
-HTTP 传输固定复用 Swoole Server、协程和 hook，`Application::handler()` 装配同一 PSR 处理链。不再提供并行的同步传输实现，能力缺失时明确失败。Windows 只有在匹配的官方 Swoole 构建及独立原生验收完成后才纳入生产支持；对外 TLS 可交给受信任反向代理。
+HTTP 传输固定复用 Swoole Server、协程和 hook，`Application::handler()` 装配同一 PSR 处理链。不再提供并行的同步传输实现，能力缺失时明确失败。Windows x64 已有 Swoole SDK 构建与加载、三库 ORM 原生结果，但本模板使用的经典 `SwooleServer::serve()` 当前明确拒绝 Windows，完整 HTTP 适配与验收仍待完成；对外 TLS 可交给受信任反向代理。
 
 全部业务路由均需 Bearer token：GET / 返回固定用法，GET/POST /users，GET/PATCH/DELETE /users/{id} 保留既有 CRUD 行为。列表每页20条；`name`、`age` 筛选通过 `_vali()` 和 `_query()`，排序仅允许 `sort=id|name|age` 及 ASC/DESC 方向，分页补真实主键保证稳定。未知字段、数组方向、SQL片段或只提供 direction 均拒绝；不允许用户选择任意数据库列。
 
@@ -121,7 +123,7 @@ build/release/run help
 
 Windows使用发布目录的`run.cmd`。为独立数据根设置APP_BASE_PATH和配置后，显式执行`migrate run`、检查历史，再启动serve或对应系统服务。发布根的OPERATIONS.md包含首次部署、版本切换、三库备份/恢复和不能自动回滚的情况；不要把切回旧二进制当作数据库回滚。升级生成新发布目录，不覆盖旧版本；恢复默认指向新目标并保留原数据。
 
-原生 Windows、Linux、macOS 是统一目标，传输和文件路径已经按明确接口组织；TypePHP有相应后端不等于框架依赖全部验收。Windows/macOS原生AOT仍须准确的工具链、运行库与实际结果，不能用Docker/WSL的Linux结果代替。本次模板调整不声称新三平台或远端分发已完成。
+Linux x64 已有基础命令 AOT 与实际运行结果；Linux ARM64、macOS ARM64、Windows x64 已有三库独立 ORM 的 PHP、AOT 和无源码运行结果。各结果只覆盖记录的提交与场景，准确范围、SDK 前提与完整应用限制统一见[平台与验收](https://iots.top/#/guide/platforms)。模板自己的 HTTP、watch、发布搬迁等功能仍须按目标平台分别验收，Docker/WSL 的 Linux 结果不代替 Windows/macOS 原生结果。
 
 `composer test` 保留 tests/smoke.php 公开入口，覆盖离线命令、外部dotenv、迁移、一级/多级静态路由、真实用户HTTP、筛选排序、PATCH、软删除和停止。设置 TYPE_APP_BINARY 为准确原生二进制路径，可驱动同一业务套件；已有 TYPE_APP_COMMAND/TYPE_APP_SERVER_COMMAND 部署验收接口保留。测试会创建用户，只能在新建专用数据库运行，不能使用业务数据库。
 
