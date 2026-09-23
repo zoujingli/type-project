@@ -207,7 +207,9 @@ final class Application
         }
         $driver = DatabaseFactory::create($settings, $basePath);
 
-        return (new MigrationConsole(new Migrator($driver), Schema::migrations($driver->name())))->run($arguments);
+        return CoroutineRuntime::run(static function () use ($driver, $arguments): int {
+            return (new MigrationConsole(new Migrator($driver), Schema::migrations($driver->name())))->run($arguments);
+        });
     }
 
     /** 返回服务器可复用的有界输入声明，不打开临时文件或创建目录。 */
