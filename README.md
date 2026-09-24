@@ -4,6 +4,18 @@
 
 **框架已验证平台：Linux x64 / ARM64、macOS ARM64、Windows x64。** 具体命令、ORM 和应用场景见[平台支持表](https://iots.top/#/guide/platforms?id=当前平台状态)。本模板的经典 HTTP 入口仍要求 Unix worker 与信号能力，不能将组件验收扩大为模板全部功能在 Windows 上通过。
 
+## 环境与交付
+
+框架已集成 Swoole 的网络与并发能力，路由、配置和模型在构建期生成，生产代码经 TypePHP 全量编译。`type-build` 已提供四平台预编译 Swoole 模块；安装包含这些资源的组件版本后，匹配构建默认复用，无需另行下载、编译 Swoole。
+
+| 阶段 | 准备内容 |
+| --- | --- |
+| 源码开发 | PHP CLI `>=8.4 <8.6`、Composer、匹配的 Swoole 和所选 PDO 驱动；组件安装不会自动修改 CLI 的 ini |
+| 原生构建 | `toolchain.lock.json` 对应的目标平台 SDK、PHPX 和实际扩展；内置模块固定匹配 PHP 8.5.10 ZTS ABI |
+| 部署运行 | 匹配平台的完整运行包、外置配置及持久数据；MySQL/PostgreSQL 按需提供外部服务，SQLite 无需单独服务 |
+
+部署端无需业务 PHP 源码、Composer、TypePHP 或编译 SDK。**最终目标是一个主程序文件加外置配置，启动不释放运行库；当前 `composer package` 仍生成携带原生依赖的目录包，须整体部署。** 详细准备见[环境与依赖](https://iots.top/#/guide/environment)，效率机制与测量见[性能与调优](https://iots.top/#/guide/performance)。
+
 ## 创建与驱动选择
 
 如果已经安装本阶段的 type-build，并已将公开模板克隆到本地，可直接使用统一入口创建不存在的新目录：
@@ -18,7 +30,7 @@ php vendor/bin/type dev type-app.json help
 
 创建命令选择驱动、按白名单复制文件，不执行模板 PHP 或覆盖现有目录；不要求再次运行 configure.php。创建命令读取本地模板；先通过下方 HTTPS 地址克隆模板。尚未取得该创建工具时，下面的既有独立模板入口仍然可用。
 
-先用具有只读权限的 SSH 身份取得模板，在首次安装前选择 MySQL、PostgreSQL 或 SQLite：
+通过公开 HTTPS 地址取得模板，无需 SSH 密钥；在首次安装前选择 MySQL、PostgreSQL 或 SQLite：
 
 ```sh
 git clone https://github.com/zoujingli/type-project.git my-app
@@ -119,7 +131,7 @@ build/release/run verify-runtime
 build/release/run help
 ```
 
-生产源码、配置/模型/路由/事务生成结果及生产 Composer 依赖整体编译。失败直接中止，生产不使用 dev.php、prepare.php、Composer PHP 自动加载或业务源码回退。部署携带二进制、实际原生运行库、生成资源和外部启动数据；仍需要匹配的 PHPX、libphp、所选 PDO 与服务器原生依赖，不能把无 PHP 源码称为零 PHP 运行库。
+生产源码、配置/模型/路由/事务生成结果及生产 Composer 依赖整体编译。失败直接中止，生产不使用 dev.php、prepare.php、Composer PHP 自动加载或业务源码回退。当前目录包包含二进制、生成资源和实际原生运行库，PHPX、libphp、Swoole 与所选 PDO 等依赖由构建收集，部署时保留完整布局并校验；外置配置、业务服务与数据由部署环境管理。
 
 Windows使用发布目录的`run.cmd`。为独立数据根设置APP_BASE_PATH和配置后，显式执行`migrate run`、检查历史，再启动serve或对应系统服务。发布根的OPERATIONS.md包含首次部署、版本切换、三库备份/恢复和不能自动回滚的情况；不要把切回旧二进制当作数据库回滚。升级生成新发布目录，不覆盖旧版本；恢复默认指向新目标并保留原数据。
 
