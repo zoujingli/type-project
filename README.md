@@ -110,7 +110,7 @@ PATCH 区分缺失字段与明确 null，email 可以清空；过期 version 或
 
 ## 编译、平台与验证
 
-现有 `toolchain.lock.json` 记录 PHP8.5.10 ZTS、TypePHP0.9.0、PHPX2.9.0 基线；实际产物按当前原生平台构建。SDK 由构建环境准备后执行：
+现有 `toolchain.lock.json` 记录 PHP8.5.10 ZTS、TypePHP0.9.3、PHPX2.9.2 基线；实际产物按当前原生平台构建。SDK 由构建环境准备后执行：
 
 ```sh
 composer build
