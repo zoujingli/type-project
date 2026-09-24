@@ -18,16 +18,6 @@
     "swoole/phpx": "2.9.2"
   },
   "autoload": {"psr-4": {"app\\": "app/"}},
-  "repositories": [
-    {"type": "git", "url": "https://github.com/zoujingli/type-runtime.git"},
-    {"type": "git", "url": "https://github.com/zoujingli/type-core.git"},
-    {"type": "git", "url": "https://github.com/zoujingli/type-orm.git"},
-    {"type": "git", "url": "https://github.com/zoujingli/type-orm-sqlite.git"},
-    {"type": "git", "url": "https://github.com/zoujingli/type-validate.git"},
-    {"type": "git", "url": "https://github.com/zoujingli/type-log.git"},
-    {"type": "git", "url": "https://github.com/zoujingli/type-build.git"},
-    {"type": "git", "url": "https://github.com/zoujingli/type-testing.git"}
-  ],
   "minimum-stability": "dev",
   "prefer-stable": true,
   "config": {"allow-plugins": false, "sort-packages": true},

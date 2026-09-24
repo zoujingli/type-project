@@ -1,8 +1,8 @@
 # Type 业务应用模板
 
-这是独立业务项目的起点，包名为 `zoujingli/type-project`。TypeApp 是面向原生交付的 PHP 应用框架，以 TypePHP 全量编译生产实现。Plugins 由 Composer 安装，生产组件与业务一起编译；Swoole 作为内置原生运行库随应用交付。主仓中的物联中心是成品案例，不随本模板分发。用本模板创建自己的应用，再按需安装 `type-xxxx` 组件，即可开发其他业务系统。框架组件在公开开发主仓维护，消费应用从对应公开分发子仓安装；模板不包含主仓 path repository、分发凭据、缓存/Redis 依赖或全部组件源码。
+这是独立业务项目的起点，包名为 `zoujingli/type-project`。TypeApp 是面向原生交付的 PHP 应用框架，以 TypePHP 全量编译生产实现。Plugins 由 Composer 安装，生产组件与业务一起编译；Swoole 作为内置原生运行库随应用交付。主仓中的物联中心是成品案例，不随本模板分发。用本模板创建自己的应用，再按需安装 `type-xxxx` 组件，即可开发其他业务系统。框架组件在公开开发主仓维护，消费应用通过 Packagist 安装对应公开分发包；模板不包含主仓 path repository、分发凭据、缓存/Redis 依赖或全部组件源码。
 
-**框架已验证平台：Linux x64 / ARM64、macOS ARM64、Windows x64。** 具体命令、ORM 和应用场景见[平台支持表](https://iots.top/#/guide/platforms?id=当前平台状态)。本模板的经典 HTTP 入口仍要求 Unix worker 与信号能力，不能将组件验收扩大为模板全部功能在 Windows 上通过。
+Linux x64 / ARM64、macOS ARM64、Windows x64 均有原生验证记录，已通过的命令、ORM 和应用场景不同，见[平台支持表](https://iots.top/#/guide/platforms?id=当前平台状态)。模板 HTTP 入口已提供 Unix 单 worker 与 Windows 协程两条平台路径；Windows 最新 HTTP 和完整应用尚无对应的通过记录，不能用历史组件结果代替。
 
 ## 环境与交付
 
@@ -18,32 +18,49 @@
 
 ## 创建与驱动选择
 
-如果已经安装本阶段的 type-build，并已将公开模板克隆到本地，可直接使用统一入口创建不存在的新目录：
+从 Packagist 创建独立应用，先选择 MySQL、PostgreSQL 或 SQLite，再安装依赖：
+
+```sh
+composer create-project --no-install --no-plugins --no-scripts zoujingli/type-project my-app dev-main
+cd my-app
+php configure.php sqlite
+composer install --no-plugins --no-scripts
+php dev.php help
+php dev.php check
+```
+
+`--no-install` 让驱动选择发生在依赖安装之前。`configure.php <mysql|pgsql|sqlite>` 只在没有 `vendor/` 和 `composer.lock` 时运行：它将所选工厂放到 `app/common/database/DatabaseFactory.php`，同时调整 Composer 的单一驱动依赖；`scaffold/` 中的其他候选不进入应用生产源码。该步骤不修改业务配置，也不通过安装钩子执行。已有应用应在代码审查下调整驱动和迁移，不能用脚本覆盖业务。
+
+模板只安装选定的 `type-orm-*`，共同依赖 core、ORM、runtime、validate、log；构建和测试组件留在 `require-dev`。Composer 从 Packagist 解析传递依赖，无需配置各个 Git 仓库。`dev-main` 是开发分支，组件的 `1.0.x-dev` 别名和 `~1.0.0@dev` 约束也不代表稳定标签。安装后提交应用的 `composer.lock`，固定实际组件提交。
+
+接着按[第一个应用教程](https://iots.top/#/guide/tutorial)完成迁移、配置令牌、真实 HTTP 操作与原生构建。
+
+### 复用本地模板
+
+已经安装 `type-build` 并取得本地模板时，可创建不存在的新目录：
 
 ```sh
 php /构建工具项目/vendor/bin/type create /本地模板目录 /新项目目录 sqlite
 cd /新项目目录
-composer install --no-scripts --no-plugins
+composer install --no-plugins --no-scripts
 php vendor/bin/type doctor type-app.json development
 php vendor/bin/type dev type-app.json help
 ```
 
-创建命令选择驱动、按白名单复制文件，不执行模板 PHP 或覆盖现有目录；不要求再次运行 configure.php。创建命令读取本地模板；先通过下方 HTTPS 地址克隆模板。尚未取得该创建工具时，下面的既有独立模板入口仍然可用。
+该入口选择驱动并按白名单复制文件，不执行模板 PHP、不覆盖现有目录，无需再运行 `configure.php`。
 
-通过公开 HTTPS 地址取得模板，无需 SSH 密钥；在首次安装前选择 MySQL、PostgreSQL 或 SQLite：
+### 直接检出模板
+
+需要通过 Git 查看模板源码时，也可使用公开 HTTPS 地址，无需 SSH 密钥：
 
 ```sh
 git clone https://github.com/zoujingli/type-project.git my-app
 cd my-app
 php configure.php sqlite
-composer install --no-scripts --no-plugins
+composer install --no-plugins --no-scripts
 php dev.php help
 php dev.php check
 ```
-
-`configure.php <mysql|pgsql|sqlite>` 保留原入口，只在没有 vendor 和 composer.lock 时运行。它将所选工厂放到 `app/common/database/DatabaseFactory.php`，同时调整根 Composer 的单一驱动依赖和对应公开仓库；`scaffold/` 中的其他候选不进入 app 生产源码。配置不通过安装钩子执行，已有应用应在代码审查下调整驱动和迁移，不用脚本覆盖业务。
-
-模板只安装选定的 `type-orm-*`，共同依赖 core、ORM、runtime、validate、log；构建和测试组件留在 require-dev。当前组件的 `dev-main` 别名为 `1.0.x-dev`，`~1.0.0@dev` 是开发版本约束，不代表稳定标签。应用提交 composer.lock，使用同一分发批次的兼容组件；本地模板修改不代表远端已经分发。
 
 ## 目录与业务分层
 
@@ -112,7 +129,7 @@ composer serve
 
 也可继续使用 `php dev.php serve`。默认监听127.0.0.1:9501，Host 白名单采用当前端口的 localhost 和127.0.0.1；对外部署显式设置 APP_LISTEN、APP_PORT、APP_ALLOWED_HOSTS，只将真实可信代理加入 APP_TRUSTED_PROXIES。模板不会创建生产令牌。
 
-HTTP 传输固定复用 Swoole Server、协程和 hook，`Application::handler()` 装配同一 PSR 处理链。不再提供并行的同步传输实现，能力缺失时明确失败。Windows x64 已有 Swoole SDK 构建与加载、三库 ORM 原生结果，但本模板使用的经典 `SwooleServer::serve()` 当前明确拒绝 Windows，完整 HTTP 适配与验收仍待完成；对外 TLS 可交给受信任反向代理。
+HTTP 传输复用 Swoole 的服务、协程和 hook，`Application::handler()` 装配同一 PSR 处理链。`SwooleServer::serve()` 在 Unix 上使用经典单 worker 服务，在 Windows 上使用协程 HTTP 服务并通过 `ProcessSignals` 接收控制台停止事件；Windows CLI 和原生 embed 使用各自的控制事件接入，均需可用控制台。能力缺失时明确失败，对外 TLS 可交给受信任反向代理。实现分支不等于整条链路已经验收，Windows 最新 HTTP 与完整应用的验证范围仍以[平台与验收](https://iots.top/#/guide/platforms)为准。
 
 全部业务路由均需 Bearer token：GET / 返回固定用法，GET/POST /users，GET/PATCH/DELETE /users/{id} 保留既有 CRUD 行为。列表每页20条；`name`、`age` 筛选通过 `_vali()` 和 `_query()`，排序仅允许 `sort=id|name|age` 及 ASC/DESC 方向，分页补真实主键保证稳定。未知字段、数组方向、SQL片段或只提供 direction 均拒绝；不允许用户选择任意数据库列。
 

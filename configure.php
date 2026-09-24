@@ -17,7 +17,7 @@ foreach (['mysql', 'pgsql', 'sqlite'] as $name) {
     unset($composer['require']['zoujingli/type-orm-' . $name]);
 }
 $composer['require']['zoujingli/type-orm-' . $driver] = '~1.0.0@dev';
-foreach ($composer['repositories'] as $index => $repository) {
+foreach ($composer['repositories'] ?? [] as $index => $repository) {
     if (preg_match('~/type-orm-(mysql|pgsql|sqlite)\.git$~', $repository['url'])) {
         $composer['repositories'][$index]['url'] = 'https://github.com/zoujingli/type-orm-' . $driver . '.git';
     }
