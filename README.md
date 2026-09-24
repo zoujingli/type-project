@@ -1,6 +1,6 @@
 # Type 业务应用模板
 
-这是独立业务项目的起点，包名为 `zoujingli/type-project`。TypeApp 是以 TypePHP 全量编译、Swoole 驱动运行、Plugins 组合能力的 PHP 应用框架。Plugins 由 Composer 安装；生产组件与业务一起编译，Swoole 原生扩展作为运行依赖提供能力。主仓中的物联中心是成品案例，不随本模板分发。用本模板创建自己的应用，再按需安装 `type-xxxx` 组件，即可开发其他业务系统。框架组件在公开开发主仓维护，消费应用从对应公开分发子仓安装；模板不包含主仓 path repository、分发凭据、缓存/Redis 依赖或全部组件源码。
+这是独立业务项目的起点，包名为 `zoujingli/type-project`。TypeApp 是面向原生交付的 PHP 应用框架，以 TypePHP 全量编译生产实现。Plugins 由 Composer 安装，生产组件与业务一起编译；Swoole 作为内置原生运行库随应用交付。主仓中的物联中心是成品案例，不随本模板分发。用本模板创建自己的应用，再按需安装 `type-xxxx` 组件，即可开发其他业务系统。框架组件在公开开发主仓维护，消费应用从对应公开分发子仓安装；模板不包含主仓 path repository、分发凭据、缓存/Redis 依赖或全部组件源码。
 
 **框架已验证平台：Linux x64 / ARM64、macOS ARM64、Windows x64。** 具体命令、ORM 和应用场景见[平台支持表](https://iots.top/#/guide/platforms?id=当前平台状态)。本模板的经典 HTTP 入口仍要求 Unix worker 与信号能力，不能将组件验收扩大为模板全部功能在 Windows 上通过。
 
@@ -139,4 +139,4 @@ Linux x64 已有基础命令 AOT 与实际运行结果；Linux ARM64、macOS ARM
 
 `composer test` 保留 tests/smoke.php 公开入口，覆盖离线命令、外部dotenv、迁移、一级/多级静态路由、真实用户HTTP、筛选排序、PATCH、软删除和停止。设置 TYPE_APP_BINARY 为准确原生二进制路径，可驱动同一业务套件；已有 TYPE_APP_COMMAND/TYPE_APP_SERVER_COMMAND 部署验收接口保留。测试会创建用户，只能在新建专用数据库运行，不能使用业务数据库。
 
-完整原生、无源码镜像与分发证据记录在[开发主仓](https://github.com/zoujingli/typeapp/blob/main/docs/development/delivery-evidence.md)。使用本模板的新能力时还需对应的新组件批次与验收结果，旧报告不为新增修改背书。
+完整原生、无源码镜像与分发证据记录在[开发主仓](https://github.com/zoujingli/typeapp/blob/main/docs/development/platform-support.md)。使用本模板的新能力时还需对应的新组件批次与验收结果，旧报告不为新增修改背书。
