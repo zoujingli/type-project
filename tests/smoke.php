@@ -130,7 +130,16 @@ $suite->test('真实用户 API、分页、PATCH 和授权隔离', static functio
         $ready = false;
         $deadline = microtime(true) + 5;
         do {
-            Assert::true($process->running(), 'HTTP 提前退出：' . $process->stderr());
+            if (!$process->running()) {
+                // 原生进程可能直接返回系统错误码；空 stderr 不能作为缺少失败原因的结论。
+                $exited = $process->wait(0);
+                $failure = json_encode([
+                    'exit-code' => $exited->exitCode, 'timed-out' => $exited->timedOut,
+                    'output-exceeded' => $exited->outputExceeded, 'signal' => $exited->signal,
+                ], JSON_THROW_ON_ERROR);
+                $secrets = array_values(array_filter([$settings['DB_PASSWORD'] ?? '', $settings['APP_API_TOKEN']], static fn (string $secret): bool => $secret !== ''));
+                Assert::true(false, 'HTTP 提前退出 ' . $failure . '：' . str_replace($secrets, '<REDACTED>', $exited->stdout . $exited->stderr));
+            }
             try {
                 if ($client->request('GET', '/readyz')->status === 200) {
                     $ready = true;
