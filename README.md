@@ -2,7 +2,7 @@
 
 这是独立业务项目的起点，包名为 `zoujingli/type-project`。TypeApp 是面向原生交付的 PHP 应用框架，以 TypePHP 全量编译生产实现。Plugins 由 Composer 安装，生产组件与业务一起编译；Swoole 作为内置原生运行库随应用交付。主仓中的物联中心是成品案例，不随本模板分发。用本模板创建自己的应用，再按需安装 `type-xxxx` 组件，即可开发其他业务系统。框架组件在公开开发主仓维护，消费应用通过 Packagist 安装对应公开分发包；模板不包含主仓 path repository、分发凭据、缓存/Redis 依赖或全部组件源码。
 
-Linux x64 / ARM64、macOS ARM64、Windows x64 均有原生验证记录，已通过的命令、ORM 和应用场景不同，见[平台支持表](https://iots.top/#/guide/platforms?id=当前平台状态)。模板 HTTP 入口已提供 Unix 单 worker 与 Windows 协程两条平台路径；Windows 最新 HTTP 和完整应用尚无对应的通过记录，不能用历史组件结果代替。
+Linux x64 / ARM64、macOS ARM64、Windows x64 已在同一源码基线上通过默认原生 CI，组件与模板开发分支分发也已通过。模板 HTTP 使用 Unix 单 worker 或 Windows 协程入口，已有真实 HTTP、正常停止及原生发布包回归；各平台的模板、主应用和隔离范围见[平台支持表](https://iots.top/#/guide/platforms?id=当前平台状态)。
 
 ## 环境与交付
 
@@ -152,7 +152,7 @@ build/release/run help
 
 Windows使用发布目录的`run.cmd`。为独立数据根设置APP_BASE_PATH和配置后，显式执行`migrate run`、检查历史，再启动serve或对应系统服务。发布根的OPERATIONS.md包含首次部署、版本切换、三库备份/恢复和不能自动回滚的情况；不要把切回旧二进制当作数据库回滚。升级生成新发布目录，不覆盖旧版本；恢复默认指向新目标并保留原数据。
 
-Linux x64 已有基础命令 AOT 与实际运行结果；Linux ARM64、macOS ARM64、Windows x64 已有三库独立 ORM 的 PHP、AOT 和无源码运行结果。各结果只覆盖记录的提交与场景，准确范围、SDK 前提与完整应用限制统一见[平台与验收](https://iots.top/#/guide/platforms)。模板自己的 HTTP、watch、发布搬迁等功能仍须按目标平台分别验收，Docker/WSL 的 Linux 结果不代替 Windows/macOS 原生结果。
+当前默认平台矩阵与公共模板分发已有成功结果，具体提交、SDK 前提及包的隔离范围统一见[平台与验收](https://iots.top/#/guide/platforms)。修改业务或升级依赖后，应重新验证模板应用的 HTTP、停止与发布搬迁；Docker/WSL 的 Linux 结果不代替 Windows/macOS 原生结果，目录包也不等于静态单程序。
 
 `composer test` 保留 tests/smoke.php 公开入口，覆盖离线命令、外部dotenv、迁移、一级/多级静态路由、真实用户HTTP、筛选排序、PATCH、软删除和停止。设置 TYPE_APP_BINARY 为准确原生二进制路径，可驱动同一业务套件；已有 TYPE_APP_COMMAND/TYPE_APP_SERVER_COMMAND 部署验收接口保留。测试会创建用户，只能在新建专用数据库运行，不能使用业务数据库。
 
